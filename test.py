@@ -29,7 +29,7 @@ class RubiksEnv(gym.Env):
         self.cube.move(move)
         self.current_solution = self.cube.get_solution()
         diff = len(previous_solution) - len(self.current_solution)
-        reward = 1 if diff > 0 else (-1 if diff < 0 else 0)
+        reward = 1 if diff > 0 else 0
         done = self.current_step > MAX_STEPS or len(self.current_solution) > MAX_SOLUTION_LENGTH or self.cube.is_solved()
         obs = self._next_observation()
         self.last_reward = reward
