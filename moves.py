@@ -50,7 +50,7 @@ def get_indices(state, indices):
     return [state[index] for index in indices]
 
 def hash_state(state):
-    return ",".join(state)
+    return ",".join(["%d" % s for s in state])
 
 if __name__ == '__main__':
     pass
