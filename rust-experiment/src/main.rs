@@ -19,7 +19,7 @@ fn main() {
 			break;
 		}
 		let (state, distance) = elem.unwrap();
-		let results: Vec<i128> = OPERATIONS.par_iter()
+		let results: Vec<i128> = FIXED_CUBIE_OPERATIONS.par_iter()
 			.map(|op| { op(state) })
 			.filter(|new_state| { !lookup.contains_key(&new_state) })
 			.collect();
@@ -41,14 +41,19 @@ fn main() {
     let data = lookup.iter()
        .map(|(key, &val)| format!("{1} {0:072b}\n", key, val))
        .collect::<String>();
-    fs::write("./results-cubies.txt", data).expect("Unable to write file");
+    fs::write("./results-cubies-fixed.txt", data).expect("Unable to write file");
 }
 
 // 101101011101101011010011100100110110001100010010001001010110100110011001
 // 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
-static OPERATIONS: &'static [fn(i128) -> i128] = &[
+static ALL_OPERATIONS: &'static [fn(i128) -> i128] = &[
     lu,ld,ru,rd,fl,fr,ul,ur,dl,dr,bl,br,
 ];
+
+static FIXED_CUBIE_OPERATIONS: &'static [fn(i128) -> i128] = &[
+    lu,ld,ul,ur,bl,br,
+];
+
 
 fn lu(x: i128) -> i128 {
     return ((x & 0x38000000) << 42)|((x & 0x1c71c71c71c7000fff) << 0)|((x & 0xe00000000) << 30)|((x & 0xe38000e38000000000) >> 12)|((x & 0x38000000e00000) >> 6)|((x & 0xe00000000000000) >> 18)|((x & 0x1c0000) << 3)|((x & 0x7000) << 6)|((x & 0x38000) >> 3);
