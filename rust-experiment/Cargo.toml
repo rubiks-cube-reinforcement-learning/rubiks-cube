@@ -6,3 +6,5 @@ edition = "2018"
 
 [dependencies]
 rayon = "1.5"
+rand = "0.7.3"
+itertools = "0.9"
