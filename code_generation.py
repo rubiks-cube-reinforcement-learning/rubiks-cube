@@ -1,11 +1,10 @@
-from cube2.binary_representation import find_permutations_to_orient_the_cube, CUBE_WITH_UNIQUE_STICKER_CODES, \
-    compute_bitwise_shifts
-from cube2.cube import StickerBinarySerializer, IntSerializer, Cube2, OPERATIONS
-from utils import compute_stickers_permutation
+from typing import TypeVar, Type
 
-MODE_STICKERS = 'stickers'
-MODE_CUBIES = 'cubies'
-MODE = MODE_STICKERS
+from binary_representation import build_binary_orientation_spec, permutation_to_bitwise_ops
+from cube2.cube import StickerBinarySerializer, IntSerializer, Cube2, OPERATIONS
+from utils import compute_stickers_permutation, CubiesCube, cube_with_unique_sticker_codes
+
+# For now this is specific to Cube2
 BINARY_SERIALIZER = StickerBinarySerializer()
 INT_SERIALIZER = IntSerializer(BINARY_SERIALIZER)
 SOLVED_CUBE = Cube2()
@@ -13,16 +12,20 @@ SOLVED_CUBE_BINARY = BINARY_SERIALIZER.serialize(SOLVED_CUBE)
 SOLVED_CUBE_INT = INT_SERIALIZER.serialize(SOLVED_CUBE)
 SOLVED_CUBE_HEX = hex(SOLVED_CUBE_INT)
 
+T = TypeVar("T", bound=CubiesCube)
 
-def compute_stickers_bitwise_shifts_per_operation():
+
+def compute_stickers_bitwise_shifts_per_operation(cube_class: Type[T]):
+    unique_cube = cube_with_unique_sticker_codes(cube_class)
+
     bitwise_shifts = {}
     for name, op in OPERATIONS.items():
-        permutation = compute_stickers_permutation(op(CUBE_WITH_UNIQUE_STICKER_CODES), CUBE_WITH_UNIQUE_STICKER_CODES)
-        bitwise_shifts[name] = compute_bitwise_shifts(permutation)
+        permutation = compute_stickers_permutation(op(unique_cube), unique_cube)
+        bitwise_shifts[name] = permutation_to_bitwise_ops(permutation)
     return bitwise_shifts
 
 
-def print_rust_code():
+def print_rust_code(cube_class: Type[T]):
     print(SOLVED_CUBE_BINARY)
     print(SOLVED_CUBE_HEX)
     print(f"""
@@ -30,25 +33,17 @@ fn main() {{
 	let solved_state:i64 = {SOLVED_CUBE_HEX};
 }}
 """)
-    if MODE is MODE_STICKERS:
-        print_rust_orienting_permutation(find_permutations_to_orient_the_cube())
-        print_rust_bitwise_shifts(compute_stickers_bitwise_shifts_per_operation())
-    elif MODE is MODE_CUBIES:
-        pass
-        # @TODO maybe
+    print_rust_orienting_permutation(build_binary_orientation_spec(cube_class))
+    print_rust_bitwise_shifts(compute_stickers_bitwise_shifts_per_operation(cube_class))
 
 
-def print_python_code():
+def print_python_code(cube_class: Type[T]):
     print("""'''
 This file was auto-generated, do not change manually
 '''""")
-    if MODE is MODE_STICKERS:
-        serializer_name = 'StickerBinarySerializer'
-        print_python_orienting_permutation(find_permutations_to_orient_the_cube())
-        print_python_bitwise_shifts(compute_stickers_bitwise_shifts_per_operation())
-    elif MODE is MODE_CUBIES:
-        serializer_name = 'CubieVectorBinarySerializer'
-        # @TODO maybe
+    serializer_name = 'StickerBinarySerializer'
+    print_python_orienting_permutation(build_binary_orientation_spec(cube_class))
+    print_python_bitwise_shifts(compute_stickers_bitwise_shifts_per_operation(cube_class))
 
     ops = list(OPERATIONS.keys())
     ops_str = (", ".join(ops)).lower()
@@ -75,7 +70,7 @@ main()
 
 
 def print_rust_bitwise_shifts(bitwise_shifts):
-    int_type = 'i128' if MODE is MODE_STICKERS else 'i64'
+    int_type = 'i128'
     for name, shifts in bitwise_shifts.items():
         print(f"""
 fn {name.lower()}(x: {int_type}) -> {int_type} {{
@@ -84,16 +79,16 @@ fn {name.lower()}(x: {int_type}) -> {int_type} {{
 
 
 def print_rust_orienting_permutation(definitions):
-    int_type = 'i128' if MODE is MODE_STICKERS else 'i64'
+    int_type = 'i128'
     print(f"""
 fn orient_cube(x: {int_type}) -> {int_type} {{""")
     print(f'    let mut actual_color_pattern: {int_type};')
     for cubie, definitions in definitions.items():
-        actual_color_pattern = stringify_bitwise_shifts(definitions[0]['bitwise_color_detection_shifts'])
+        actual_color_pattern = stringify_bitwise_shifts(definitions[0]['color_detection_bitwise_lhs'])
         print(f'    actual_color_pattern = {actual_color_pattern};')
         for definition in definitions:
-            oriented_cube = stringify_bitwise_shifts(definition['bitwise_orienting_permutation'])
-            print(f'    if actual_color_pattern == {definition["color_pattern"]} {{')
+            oriented_cube = stringify_bitwise_shifts(definition['orient_cube_bitwise_op'])
+            print(f'    if actual_color_pattern == {definition["color_detection_bitwise_rhs"]} {{')
             print(f'        return {oriented_cube};')
             print(f'    }}')
     print('    panic!("State was not possible to orient: {}", x);')
@@ -113,12 +108,12 @@ def print_python_orienting_permutation(definitions):
     print("""
 def orient_cube(x:int):""")
     for cubie, definitions in definitions.items():
-        actual_color_pattern = stringify_bitwise_shifts(definitions[0]['bitwise_color_detection_shifts'])
+        actual_color_pattern = stringify_bitwise_shifts(definitions[0]['color_detection_bitwise_lhs'])
         print(f'    # Cubie {cubie}')
         print(f'    actual_color_pattern = {actual_color_pattern}')
         for definition in definitions:
-            oriented_cube = stringify_bitwise_shifts(definition['bitwise_orienting_permutation'])
-            print(f'    if actual_color_pattern == {definition["color_pattern"]}:')
+            oriented_cube = stringify_bitwise_shifts(definition['orient_cube_bitwise_op'])
+            print(f'    if actual_color_pattern == {definition["color_detection_bitwise_rhs"]}:')
             print(f'        return {oriented_cube}')
     print('    raise Exception("State {0} was not possible to orient to fix cubie 4 in place".format(x))')
 

@@ -50,6 +50,11 @@ class CubiesCube:
         5: AXIS_Z,
         6: AXIS_Z,
     }
+    AXIS_TO_FACES = {
+        AXIS_X: [1, 3],
+        AXIS_Y: [2, 4],
+        AXIS_Z: [5, 6],
+    }
 
     FIXED_CUBIE_INDEX = None
     FIXED_CUBIE_COLOR_PATTERN = [1, 4, 6]
@@ -84,7 +89,7 @@ class CubiesCube:
 
     @property
     def as_cubies_indexes(self):
-        return [cubie.index for cubie in self.cubies]
+        return [cubie.idx for cubie in self.cubies[1:]]
 
 
 class Cubie:

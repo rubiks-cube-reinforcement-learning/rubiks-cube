@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, TypeVar, Callable, Type, Dict, Tuple
+from typing import List, TypeVar, Callable, Type, Dict, Tuple, Any
 
 from utils import CubiesCube, flatten, compute_stickers_permutation, Cubie, cube_with_unique_sticker_codes, \
     apply_stickers_permutation
@@ -29,6 +29,46 @@ def compute_all_orienting_permutations(cube_class: Type[T]) -> List[List[int]]:
     all_rotations = compute_all_cube_rotations(solved_cube)
 
     return [compute_stickers_permutation(solved_cube, rotated_cube) for rotated_cube in all_rotations]
+
+
+def identity(x):
+    return x
+
+
+def compute_all_orienting_permutations_by_cubie_and_stickers(cube_class: Type[T]) -> Dict[int, List[Dict[str, Any]]]:
+    permutations = defaultdict(lambda: [])
+    all_rotations = compute_all_cube_rotations(cube_class())
+    all_orienting_permutations = compute_all_orienting_permutations(cube_class)
+    for rotated_cube in all_rotations:
+        for permutation in all_orienting_permutations:
+            rotated = apply_stickers_permutation(rotated_cube, permutation)
+            maybe_fixed_cubie = rotated.cubies[cube_class.FIXED_CUBIE_INDEX]
+            if maybe_fixed_cubie.faces == cube_class.FIXED_CUBIE_COLOR_PATTERN:
+                before_cubie = None
+                before_cubie_idx = None
+                for i, rotated_cubie in enumerate(rotated_cube.cubies):
+                    fixed_faces = sorted(filter(identity, maybe_fixed_cubie.faces))
+                    before_faces = sorted(filter(identity, rotated_cubie.faces))
+                    if fixed_faces == before_faces:
+                        before_cubie = rotated_cubie
+                        before_cubie_idx = i
+                        break
+                cubie_idx = before_cubie_idx
+                permutations[cubie_idx].append({
+                    "cubie_idx": cubie_idx,
+                    "color_pattern": before_cubie.faces,
+                    "permutation": permutation,
+                })
+    return dict(permutations)
+
+
+def find_stickers_permutation_to_orient_the_cube(cube: T) -> List[int]:
+    all_orienting_permutations = compute_all_orienting_permutations(type(cube))
+    for permutation in all_orienting_permutations:
+        rotated = apply_stickers_permutation(cube, permutation)
+        maybe_fixed_cubie = rotated.cubies[cube.FIXED_CUBIE_INDEX]
+        if maybe_fixed_cubie.faces == cube.FIXED_CUBIE_COLOR_PATTERN:
+            return permutation
 
 
 def compute_possible_stickers_patterns(solved_pattern, is_even=True):
@@ -69,10 +109,8 @@ def find_fixed_cubie_in_scrambled_state(scrambled_cube: T) -> Tuple[int, Cubie, 
     return None, None, None
 
 
-def find_stickers_permutations_to_orient_the_cube(cube: T) -> List[int]:
-    all_orienting_permutations = compute_all_orienting_permutations(type(cube))
-    for permutation in all_orienting_permutations:
-        rotated = apply_stickers_permutation(cube, permutation)
-        maybe_fixed_cubie = rotated.cubies[cube.FIXED_CUBIE_INDEX]
-        if maybe_fixed_cubie.faces == cube.FIXED_CUBIE_COLOR_PATTERN:
-            return permutation
+def orient_cube(cube: T) -> T:
+    return apply_stickers_permutation(
+        cube,
+        find_stickers_permutation_to_orient_the_cube(cube)
+    )
