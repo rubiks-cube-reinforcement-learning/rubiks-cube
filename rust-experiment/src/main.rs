@@ -1,3 +1,5 @@
+extern crate fxhash;
+use fxhash::FxHashMap;
 use std::time::{Duration, Instant};
 use std::collections::VecDeque;
 use std::collections::HashMap;
@@ -6,6 +8,7 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::panic;
 use std::path::Path;
+use std::hash::{BuildHasher, BuildHasherDefault};
 use rayon::iter::ParallelBridge;
 use rayon::prelude::ParallelIterator;
 use rand::Rng;
@@ -18,7 +21,7 @@ fn main() {
     println!("Generating dataset...");
     let nb_per_scramble:i32 = 10000;
     let max_scrambles:i32 = 100;
-    let repetitions:i32 = 100;
+    let repetitions:i32 = 10;
     let nb_iterations : i128 = (nb_per_scramble as i128) * (max_scrambles as i128) * (repetitions as i128);
     let dataset = generate_dataset(nb_per_scramble, max_scrambles);
 
@@ -46,7 +49,7 @@ fn generate_dataset(nb_per_scramble: i32, max_scrambles: i32) -> Vec<i128> {
 static SOLVED_STATE: i128 = 0x2494926db924b6ddb6;
 static LOOKUP_FILE_PATH: &str = "./results-cubies-fixed.txt";
 
-fn solve_cube<'a>(x: i128, lookup: &HashMap<i128, i8>) -> Vec<&'a str> {
+fn solve_cube<'a>(x: i128, lookup: &FxHashMap<i128, i8>) -> Vec<&'a str> {
     let mut solution: Vec<&str> = vec![];
     let mut state = x;
     if !lookup.contains_key(&state) {
@@ -136,8 +139,8 @@ fn generate_state_lookup_table() {
 }
 
 // @TODO consider simple hasher https://gist.github.com/arthurprs/88eef0b57b9f8341c54e2d82ec775698
-fn load_lookup_table(path: &str) -> HashMap<i128, i8> {
-    let mut lookup: HashMap<i128, i8> = HashMap::new();
+fn load_lookup_table(path: &str) -> FxHashMap<i128, i8> {
+    let mut lookup = FxHashMap::default();
     if let Ok(lines) = read_lines(path) {
         // Consumes the iterator, returns an (Optional) String
         lookup = lines
@@ -149,7 +152,7 @@ fn load_lookup_table(path: &str) -> HashMap<i128, i8> {
                 let distance = words[0].parse::<i8>().unwrap();
                 return (state, distance);
             })
-            .collect::<HashMap<i128, i8>>()
+            .collect::<FxHashMap<i128, i8>>()
         ;
     }
     return lookup;
