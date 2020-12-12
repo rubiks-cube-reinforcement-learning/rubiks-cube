@@ -1,11 +1,14 @@
 import math
+import random
 from collections import defaultdict
 from functools import reduce
 from typing import Dict, TypeVar, Type, Any, Generic
 
+from cube2.cube import Cube2
+from cube3.cube import Cube3
 from orientation import compute_all_orienting_permutations_by_cubie_and_stickers
 from utils import Cubie, cube_with_unique_sticker_codes, CubiesCube, AXIS_X, AXIS_Y, AXIS_Z, CubeSerializer, \
-    StickerVectorSerializer, normalize_binary_string
+    StickerVectorSerializer, normalize_binary_string, AXES, compute_stickers_permutation
 
 T = TypeVar("T", bound=CubiesCube)
 
@@ -31,14 +34,25 @@ class IntSpec:
         return IntSpec(bits_per_color, data_bits)
 
 
+def build_cube3_to_cube2_bitwise_ops():
+    unique_cube3 = cube_with_unique_sticker_codes(Cube3)
+    unique_cube2 = unique_cube3.as_cube2
+    size_diff = len(unique_cube3.as_stickers_vector) - len(unique_cube2.as_stickers_vector)
+
+    old_indices = compute_stickers_permutation(unique_cube2, unique_cube3)
+    new_indices = [i + size_diff for i in range(len(old_indices))]
+    shifts_spec = dict(list(zip(old_indices, new_indices)))
+    return sticker_wise_permutation_to_bitwise_ops(shifts_spec, IntSpec.for_cube(Cube3))
+
+
 def build_binary_orientation_spec(cube_class: Type[T]) -> Dict[int, Any]:
     int_spec = IntSpec.for_cube(cube_class)
-    binary_spec = {}
+    bitwise_spec = {}
     all_orienting_permutations = compute_all_orienting_permutations_by_cubie_and_stickers(cube_class)
     for cubie_idx, cubie_spec in all_orienting_permutations.items():
-        binary_spec[cubie_idx] = []
+        bitwise_spec[cubie_idx] = []
         for entry in cubie_spec:
-            binary_spec[cubie_idx].append({
+            bitwise_spec[cubie_idx].append({
                 "cubie": cubie_idx,
                 "color_pattern": entry["color_pattern"],
                 "color_detection_bitwise_lhs": color_detection_bitwise_ops(cube_class, cubie_idx),
@@ -49,7 +63,7 @@ def build_binary_orientation_spec(cube_class: Type[T]) -> Dict[int, Any]:
                 ),
                 "orient_cube_bitwise_op": permutation_to_bitwise_ops(entry["permutation"], int_spec)
             })
-    return binary_spec
+    return bitwise_spec
 
 
 def color_detection_bitwise_ops(cube_class: Type[T], cubie_idx) -> Dict[int, int]:
@@ -149,3 +163,4 @@ class IntSerializer(CubeSerializer[T]):
 
     def unserialize(self, number: int) -> T:
         return self.binary_serializer.unserialize("{0:03b}".format(number))
+

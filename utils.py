@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+import random
 from functools import reduce
 from typing import Type, TypeVar, Generic, List, Dict, Tuple
 
@@ -39,7 +40,7 @@ def sequences(_list):
 AXIS_X = 1
 AXIS_Y = 2
 AXIS_Z = 3
-
+AXES = [AXIS_X, AXIS_Y, AXIS_Z]
 
 class CubiesCube:
     FACE_TO_AXIS = {
@@ -88,8 +89,18 @@ class CubiesCube:
         return StickerVectorSerializer(type(self)).serialize(self)
 
     @property
-    def as_cubies_indexes(self):
+    def as_cubies_indices(self):
         return [cubie.idx for cubie in self.cubies[1:]]
+
+    @property
+    def as_stickers_int(self):
+        from binary_representation import StickerBinarySerializer, IntSerializer
+        return IntSerializer(StickerBinarySerializer()).serialize(self)
+
+    @property
+    def as_stickers_binary_string(self):
+        from binary_representation import StickerBinarySerializer
+        return StickerBinarySerializer().serialize(self)
 
 
 class Cubie:
@@ -233,3 +244,22 @@ def apply_stickers_permutation(cube: T, permutation: List[int]) -> T:
     before = cube.as_stickers_vector
     after = [before[i] for i in permutation]
     return StickerVectorSerializer(type(cube)).unserialize(after)
+
+
+def generate_dataset(nb_per_scramble, max_scrambles, scramble_fn):
+    dataset = []
+    for i in range(nb_per_scramble):
+        for scrambles in range(max_scrambles):
+            dataset.append(scramble_fn(scrambles))
+    return dataset
+
+
+def scramble(solved_state, scrambles, moves=None):
+    state = solved_state
+    op = last_op = None
+    for i in range(scrambles):
+        while op is last_op:
+            op = random.choice(moves)
+        state = op(state)
+        last_op = op
+    return state

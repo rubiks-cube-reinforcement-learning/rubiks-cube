@@ -1,5 +1,4 @@
 # coding=utf-8
-from binary_representation import StickerBinarySerializer, IntSerializer
 from utils import Cubie, AXIS_X, AXIS_Y, AXIS_Z, Operation, CubiesCube, \
     partition
 from loggers import getLogger
@@ -67,14 +66,6 @@ class Cube2(CubiesCube):
             Cubie(3, 4, 5, 7),
             Cubie(3, 4, 6, 8),
         ])
-
-    @property
-    def as_stickers_int(self):
-        return IntSerializer(StickerBinarySerializer()).serialize(self)
-
-    @property
-    def as_stickers_binary_string(self):
-        return StickerBinarySerializer().serialize(self)
 
 
 Cube2.OPERATIONS = OPERATIONS
