@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import List, TypeVar, Callable, Type, Dict, Tuple, Any
 
 from utils import CubiesCube, flatten, compute_stickers_permutation, Cubie, cube_with_unique_sticker_codes, \
-    apply_stickers_permutation
+    apply_stickers_permutation, identity
 
 T = TypeVar("T", bound=CubiesCube)
 RotationMove = Callable[[T], T]
@@ -29,10 +29,6 @@ def compute_all_orienting_permutations(cube_class: Type[T]) -> List[List[int]]:
     all_rotations = compute_all_cube_rotations(solved_cube)
 
     return [compute_stickers_permutation(solved_cube, rotated_cube) for rotated_cube in all_rotations]
-
-
-def identity(x):
-    return x
 
 
 def compute_all_orienting_permutations_by_cubie_and_stickers(cube_class: Type[T]) -> Dict[int, List[Dict[str, Any]]]:

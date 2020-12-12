@@ -1,7 +1,7 @@
 # coding=utf-8
-
-from utils import normalize_binary_string, Cubie, AXIS_X, AXIS_Y, AXIS_Z, Operation, CubiesCube, \
-    CubeSerializer, StickerVectorSerializer, partition
+from binary_representation import StickerBinarySerializer, IntSerializer
+from utils import Cubie, AXIS_X, AXIS_Y, AXIS_Z, Operation, CubiesCube, \
+    partition
 from loggers import getLogger
 
 logger = getLogger(__name__)
@@ -80,39 +80,3 @@ class Cube2(CubiesCube):
 Cube2.OPERATIONS = OPERATIONS
 Cube2.ROTATION_MOVES = CUBE2_ROTATION_MOVES
 Cube2.OPPOSITE_ROTATION_MOVES = CUBE2_OPPOSITE_ROTATION_MOVES
-
-
-class StickerBinarySerializer(CubeSerializer[Cube2]):
-    INT_LENGTH = 128
-    CUBIES_NB = 24
-    COLOR_BITS = 3
-    DATA_LENGTH = COLOR_BITS * CUBIES_NB
-    OFFSET = INT_LENGTH - DATA_LENGTH
-
-    def __init__(self) -> None:
-        super().__init__(Cube2)
-
-    def serialize(self, cube: Cube2):
-        vector = StickerVectorSerializer(self.cube_class).serialize(cube)
-        return "".join(["0"] * self.OFFSET + ["{0:03b}".format(n) for n in vector])
-
-    def unserialize(self, binary_string: str) -> Cube2:
-        binary_string = normalize_binary_string(binary_string, self.DATA_LENGTH)
-        n = 3
-        vector = [binary_string[i:i + n] for i in range(0, len(binary_string), n)]
-        vector = [int(part, 2) for part in vector]
-        return StickerVectorSerializer(self.cube_class).unserialize(vector)
-
-
-class IntSerializer(CubeSerializer[Cube2]):
-
-    def __init__(self, binary_serializer: CubeSerializer) -> None:
-        self.binary_serializer = binary_serializer
-        super().__init__(Cube2)
-
-    def serialize(self, cube: Cube2):
-        binary = self.binary_serializer.serialize(cube)
-        return int(binary, 2)
-
-    def unserialize(self, number: int) -> Cube2:
-        return self.binary_serializer.unserialize("{0:03b}".format(number))

@@ -196,9 +196,13 @@ class StickerVectorSerializer(CubeSerializer):
         return cube
 
 
+def identity(x):
+    return x
+
+
 def compute_stickers_permutation(target_cube: CubiesCube, source_cube: CubiesCube) -> List[int]:
-    source_vector = source_cube.as_stickers_vector
-    target_vector = target_cube.as_stickers_vector
+    source_vector = list(filter(identity, source_cube.as_stickers_vector))
+    target_vector = list(filter(identity, target_cube.as_stickers_vector))
     return [source_vector.index(i) for i in target_vector]
 
 
