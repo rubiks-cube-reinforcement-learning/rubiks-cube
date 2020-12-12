@@ -72,4 +72,4 @@ if __name__ == '__main__':
     for i in range(100):
         for example in dataset:
             find_solution(example)
-    print("finished")
+    print("Finished")
