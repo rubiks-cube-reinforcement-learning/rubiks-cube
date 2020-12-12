@@ -1,13 +1,13 @@
 import random
-from stickers_bitwise_ops import FIXED_CUBIE_OPS, OPS, SOLVED_CUBE_STATE, orient_cube
+from cube2.generated_stickers_bitwise_ops import FIXED_CUBIE_OPS, OPS, SOLVED_CUBE_STATE, orient_cube
 
 LOOKUP = {}
 
 
-def load_lookup_table():
+def load_lookup_table(path: str = '../rust-experiment/results-cubies-fixed.txt'):
     if len(LOOKUP) > 0:
         return
-    with open('rust-experiment/results-cubies-fixed.txt') as fp:
+    with open(path) as fp:
         for line in fp:
             moves, binary_rep = line.strip().split(' ')
             state = int(binary_rep, 2)
