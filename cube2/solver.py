@@ -1,3 +1,4 @@
+import pickle
 from pathlib import Path
 
 from cube2.generated_stickers_bitwise_ops import FIXED_CUBIE_OPS, OPS, SOLVED_CUBE_STATE, orient_cube
@@ -43,6 +44,49 @@ def find_solution(state):
         else:
             raise Exception("Did not find any move leading to a shorter distance")
     return path
+
+
+def precompute_all_moves(out_path=Path(__file__).parent / "all-moves.pickle"):
+    load_lookup_table()
+
+    all_moves = {}
+    for i, (state, distance) in enumerate(list(LOOKUP.items())):
+        neighbors = [op(state) for op in FIXED_CUBIE_OPS]
+        weights = [LOOKUP[new_state] for new_state in neighbors]
+        moves = list(zip(FIXED_CUBIE_OPS.keys(), weights, neighbors))
+        optimal = min(moves, key=lambda move: move[1])
+        all_moves[state] = {
+            "distance": distance,
+            "moves": moves,
+            "optimal": optimal
+        }
+        if i % 100000 == 0:
+            print(i)
+
+    with out_path.open('wb+') as fp:
+        pickle.dump(all_moves, fp)
+    return all_moves
+
+
+def load_precomputed_moves(path=Path(__file__).parent / "all-moves.pickle"):
+    with path.open('rb+') as fp:
+        return pickle.load(fp)
+
+
+def precompute_solutions(precomputed_moves):
+    solutions = {}
+    for loaded_state, data in list(precomputed_moves.items())[:]:
+        solution = []
+        next = data
+        while next['optimal'][1] < next['distance']:
+            solution.append(next['optimal'][0])
+            next = precomputed_moves[next['optimal'][2]]
+        solutions[loaded_state] = dict(solution=solution, **data)
+    return solutions
+
+
+def find_solution_precomputed(oriented_state, precomputed_solutions):
+    return precomputed_solutions[oriented_state]['solution']
 
 
 if __name__ == '__main__':
