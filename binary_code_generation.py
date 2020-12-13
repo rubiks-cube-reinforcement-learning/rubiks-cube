@@ -286,7 +286,7 @@ fn cube3_to_cube2(x: i{cube3_spec.int_size}) -> i{cube2_spec.int_size} {{
     def build_cube_orientation_code(self, definitions):
         code = []
         code.append(f"""
-fn orient_cube(x: {self.int_type}) -> {self.int_type} {{""")
+pub fn orient_cube(x: {self.int_type}) -> {self.int_type} {{""")
         code.append(f'    let mut actual_color_pattern: {self.int_type};')
         for cubie, definitions in definitions.items():
             actual_color_pattern = stringify_bitwise_shifts(definitions[0]['color_detection_bitwise_lhs'])
@@ -304,7 +304,7 @@ fn orient_cube(x: {self.int_type}) -> {self.int_type} {{""")
         code = []
         for name, shifts in bitwise_shifts.items():
             code.append(f"""
-fn {name.lower()}(x: {self.int_type}) -> {self.int_type} {{
+pub fn {name.lower()}(x: {self.int_type}) -> {self.int_type} {{
     return {stringify_bitwise_shifts(shifts)};
 }}""")
         return "\n".join(code)
@@ -312,12 +312,9 @@ fn {name.lower()}(x: {self.int_type}) -> {self.int_type} {{
     def build_main_function(self, moves_fn_names, fixed_cubie_fn_names):
         return f"""
 // self.solved_cube_binary
-static ALL_OPERATIONS: &'static [fn(i128) -> i128] = &[{(", ".join(moves_fn_names)).lower()}];
-static FIXED_CUBIE_OPERATIONS: &'static [fn(i128) -> i128] = &[{(", ".join(fixed_cubie_fn_names)).lower()}];
-
-fn main() {{
-    let solved_state:i64 = {hex(self.solved_cube_int)};
-}}
+pub static ALL_OPERATIONS: &'static [fn(i128) -> i128] = &[{(", ".join(moves_fn_names)).lower()}];
+pub static FIXED_CUBIE_OPERATIONS: &'static [fn(i128) -> i128] = &[{(", ".join(fixed_cubie_fn_names)).lower()}];
+pub static SOLVED_STATE: i128 = {hex(self.solved_cube_int)};
     """
 
 

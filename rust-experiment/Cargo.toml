@@ -1,11 +1,19 @@
 [package]
-name = "hello_world"
+name = "rubiks_cube"
 version = "0.1.0"
-authors = ["Your Name <you@example.com>"]
+authors = ["Adam Zielinski <adam@adamziel.com>"]
 edition = "2018"
+
+[lib]
+name = "rubiks_cube_rust"
+crate-type = ["cdylib"]
 
 [dependencies]
 rayon = "1.5"
 rand = "0.7.3"
 itertools = "0.9"
 fxhash = "0.2.1"
+
+[dependencies.pyo3]
+version = "0.8.4"
+features = ["extension-module"]
