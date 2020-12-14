@@ -142,12 +142,14 @@ class StickerBinarySerializer(CubeSerializer[T]):
         vector = StickerVectorSerializer(self.cube_class).serialize(cube)
         return "".join(["0"] * self.int_spec.offset + ["{0:03b}".format(n) for n in vector])
 
-    def unserialize(self, binary_string: str) -> T:
+    def to_vector(self, binary_string: str) -> T:
         binary_string = normalize_binary_string(binary_string, self.int_spec.data_bits)
         n = 3
         vector = [binary_string[i:i + n] for i in range(0, len(binary_string), n)]
-        vector = [int(part, 2) for part in vector]
-        return StickerVectorSerializer(self.cube_class).unserialize(vector)
+        return [int(part, 2) for part in vector]
+
+    def unserialize(self, binary_string: str) -> T:
+        return StickerVectorSerializer(self.cube_class).unserialize(self.to_vector(binary_string))
 
 
 class IntSerializer(CubeSerializer[T]):

@@ -1,8 +1,9 @@
+import itertools
 import pickle
 from pathlib import Path
 
-from binary_code_generation import PythonCodeGenerator, RustCodeGenerator
-from cube2.solver import find_solution, load_lookup_table as load_lookup_table_2, LOOKUP, load_precomputed_moves as load_precomputed_cube2_moves, \
+from binary_code_generation import PythonCodeGenerator, RustCodeGenerator, StickerBinarySerializer, IntSerializer
+from cube2.solver import find_solution, load_lookup_table as load_lookup_table_2, LOOKUP as LOOKUP2, load_precomputed_moves as load_precomputed_cube2_moves, \
     precompute_solutions as precompute_cube2_solutions, find_solution_precomputed as solve_2_cube_precomputed, \
     precompute_all_moves as precompute_all_cube2_moves, generate_binary_dataset as generate_binary_dataset_2
 from cube2.cube import Cube2
@@ -13,6 +14,8 @@ from cube3.generated_stickers_bitwise_ops import orient_cube as orient_cube_3, \
 from cube2.generated_stickers_bitwise_ops import orient_cube as orient_cube_2, \
     FIXED_CUBIE_OPS_DICT as ops2, SOLVED_CUBE_STATE as solved2
 from loggers import getLogger
+from utils import StickerVectorSerializer
+
 logger = getLogger(__name__)
 
 
@@ -41,7 +44,7 @@ def solve_3_cube_corners(cube3_scrambled, cube2_solve_fn=find_solution):
 
 DATASET_EXAMPLES_PER_SCRAMBLE = 1000
 DATASET_SCRAMBLES = 100
-N_REPEAT = 10
+N_REPEAT = 100
 
 def bench_python():
     logger.info("============= bench_python =============")
@@ -103,3 +106,19 @@ def bench_rust():
         solve_batch_rust(dataset_2)
 
     logger.info("Solved!")
+
+
+def build_nn_2cube_dataset():
+    load_lookup_table_2("./rust-experiment/results-cubies-fixed.txt")
+    half = int(len(LOOKUP2)/2)
+    serializer = StickerBinarySerializer(Cube2)
+    with open(f"cube2-distances.csv", "w+") as distances_fp:
+        for (_dataset, _from, _to) in [['train', 0, half], ['train', half, len(LOOKUP2)]]:
+            distances_fp.write(f"ID,distance\n")
+            with open(f"cube2-{_dataset}.csv", "w+") as data_fp:
+                data_fp.write("ID,pos0,pos1,pos2,pos3,pos4,pos5,pos6,pos7,pos8,pos9,pos10,pos11,pos12,pos13,pos14,pos15,pos16,pos17,pos18,pos19,pos20,pos21,pos22,pos23\n")
+                for i, (state, distance) in enumerate(itertools.islice(LOOKUP2.items(), _from, _to)):
+                    idx = _from + i
+                    line = map(str, [idx]+serializer.to_vector("{0:0b}".format(state)))
+                    data_fp.write(",".join(line)+"\n")
+                    distances_fp.write(f"{idx},{distance}\n")
