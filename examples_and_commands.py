@@ -113,7 +113,7 @@ def build_nn_2cube_dataset():
     half = int(len(LOOKUP2)/2)
     serializer = StickerBinarySerializer(Cube2)
     with open(f"cube2-distances.csv", "w+") as distances_fp:
-        for (_dataset, _from, _to) in [['train', 0, half], ['train', half, len(LOOKUP2)]]:
+        for (_dataset, _from, _to) in [['test', 0, half], ['train', half, len(LOOKUP2)]]:
             distances_fp.write(f"ID,distance\n")
             with open(f"cube2-{_dataset}.csv", "w+") as data_fp:
                 data_fp.write("ID,pos0,pos1,pos2,pos3,pos4,pos5,pos6,pos7,pos8,pos9,pos10,pos11,pos12,pos13,pos14,pos15,pos16,pos17,pos18,pos19,pos20,pos21,pos22,pos23\n")
