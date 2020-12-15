@@ -31,8 +31,8 @@ def apply_moves(cubes, buffer, moves):
 {moves}
 
 
-MOVES_INDICES = {{{moves_indices}}}
-MOVES_NAMES = {{{moves_names}}}
+MOVES_NAMES = {{{moves_indices}}}
+MOVES_INDICES = {{{moves_names}}}
 '''
 
 
@@ -46,7 +46,7 @@ def generate_moves_code():
     for name, spec in cube_3_permutations.items():
         lines.append(f"elif move == {spec[0]}:")
         indices = spec[1]
-        for _from, _to in enumerate(indices):
+        for _to, _from in enumerate(indices):
             lines.append(f"    cubes[x][{_to}] = buffer[x][{_from}]")
     lines[0] = lines[0][2:]
     return lines
