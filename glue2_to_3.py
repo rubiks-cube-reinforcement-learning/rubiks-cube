@@ -29,6 +29,10 @@ def colors_to_one_hot(colors):
     return list(chain(*[one_hot(i) for i in colors]))
 
 
+def indices_to_one_hot(indices):
+    return list(chain(*[range(i*6, i*6+6) for i in indices]))
+
+
 MOVES_WIDTH = 20
 THREADS_PER_BLOCK = 1024
 STICKERS_NB = len(Cube3().as_stickers_vector)
@@ -66,7 +70,7 @@ class Glue2To3Cube:
         return solved_cubes, moves
 
     def convert_3_cubes_to_2_cubes(self, cubes: Tensor) -> Tensor:
-        cube_3_one_hot_indices = colors_to_one_hot(build_cube3_to_cube2_shifts().keys())
+        cube_3_one_hot_indices = indices_to_one_hot(build_cube3_to_cube2_shifts().keys())
         return cubes[:, cube_3_one_hot_indices]
 
     def apply_moves_to_3_cubes_in_place(self, batch_of_cubes: Tensor, moves_per_cube: Tensor):
