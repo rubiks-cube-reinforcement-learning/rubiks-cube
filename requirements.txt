@@ -1,0 +1,4 @@
+torch==1.6.0
+numpy==1.18.5
+pandas @ file:///opt/concourse/worker/volumes/live/bfd63b8c-6035-4ed3-5bce-5690df409bf9/volume/pandas_1602088141563/work
+numba==0.51.0rc1

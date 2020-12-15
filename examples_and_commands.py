@@ -2,7 +2,8 @@ import itertools
 import pickle
 from pathlib import Path
 
-from binary_code_generation import PythonCodeGenerator, RustCodeGenerator, StickerBinarySerializer, IntSerializer
+from code_generator.bitwise_repr import StickerBinarySerializer, IntSerializer, PythonCodeGenerator, RustCodeGenerator
+from code_generator.numba_cuda import generate_3cube_numba_code
 from cube2.solver import find_solution, load_lookup_table as load_lookup_table_2, LOOKUP as LOOKUP2, load_precomputed_moves as load_precomputed_cube2_moves, \
     precompute_solutions as precompute_cube2_solutions, find_solution_precomputed as solve_2_cube_precomputed, \
     precompute_all_moves as precompute_all_cube2_moves, generate_binary_dataset as generate_binary_dataset_2
@@ -19,7 +20,7 @@ from utils import StickerVectorSerializer
 logger = getLogger(__name__)
 
 
-def refresh_bitwise_ops_code():
+def refresh_generated_code():
     base = Path(__file__).parent
     with Path(base / "cube2/generated_stickers_bitwise_ops.py").open('w+') as fp:
         fp.write(PythonCodeGenerator(Cube2).build())
@@ -32,6 +33,9 @@ def refresh_bitwise_ops_code():
 
     with Path(base / "rust-experiment/src/cube3.rs").open('w+') as fp:
         fp.write(RustCodeGenerator(Cube3).build())
+
+    with Path(base / "cube3/generated_numba.py").open('w+') as fp:
+        fp.write(generate_3cube_numba_code())
 
 
 def solve_3_cube_corners(cube3_scrambled, cube2_solve_fn=find_solution):
