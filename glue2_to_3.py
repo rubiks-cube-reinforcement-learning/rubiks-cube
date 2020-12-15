@@ -44,7 +44,8 @@ class Glue2To3Cube:
     def __init__(self, device):
         self.device = device
         self.numba_apply_moves = self._compile_numba_apply_moves()
-        self.d_recipes = cuda.from_cuda_array_interface(MOVES_CPU_TENSOR.to(device).__cuda_array_interface__)
+        self.recipes_tensor = MOVES_CPU_TENSOR.to(device)
+        self.d_recipes = cuda.from_cuda_array_interface(self.recipes_tensor.__cuda_array_interface__)
 
     def _compile_numba_apply_moves(self):
         """
