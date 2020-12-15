@@ -65,6 +65,12 @@ class CubiesCube:
     ROTATION_MOVES = {}
     OPPOSITE_ROTATION_MOVES = {}
 
+    @property
+    def FIXED_CUBIE_OPERATIONS(self):
+        return {
+            name: op for name, op in self.OPERATIONS.items() if self.FIXED_CUBIE_INDEX not in op.mapping
+        }
+
     def __init__(self, cubies):
         self.cubies = [Cubie(None, None, None, None)] + cubies  # 1-based indexing
 

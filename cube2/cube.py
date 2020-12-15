@@ -38,7 +38,6 @@ CUBE2_ROTATION_MOVES = [
 
 CUBE2_OPPOSITE_ROTATION_MOVES = partition(CUBE2_ROTATION_MOVES, 2)
 
-
 class Cube2(CubiesCube):
     NB_CUBIES = 8
 
