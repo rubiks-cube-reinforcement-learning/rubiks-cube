@@ -46,6 +46,7 @@ def build_binary_orientation_spec(cube_class: Type[T]) -> Dict[int, Any]:
     orientation_spec = build_orientation_spec(cube_class)
     for cubie_idx, cubie_spec in orientation_spec.items():
         for entry in cubie_spec:
+            entry["orient_cube_bitwise_op"] = permutation_to_bitwise_ops(entry["permutation"], int_spec)
             entry["color_detection_bitwise_lhs"] = color_detection_bitwise_ops(cube_class, cubie_idx)
             entry["color_detection_bitwise_rhs"] = (
                 (entry["color_pattern"][0] << int_spec.bits_per_color * 2) |
@@ -56,7 +57,7 @@ def build_binary_orientation_spec(cube_class: Type[T]) -> Dict[int, Any]:
 
 
 def color_detection_bitwise_ops(cube_class: Type[T], cubie_idx) -> Dict[int, int]:
-    nb_cubies = len(cube_class().as_vector)
+    nb_cubies = len(cube_class().as_stickers_vector)
     xyz_stickers_positions = compute_sticker_indices_for_cubie(cube_class, cubie_idx)
     sticker_permutations = {
         _from: _to for _from, _to in zip(xyz_stickers_positions, range(nb_cubies - 3, nb_cubies))

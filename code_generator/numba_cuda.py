@@ -8,7 +8,7 @@ def indices_to_one_hot(indices):
 
 
 def generate_3cube_numba_code():
-    moves = "\n".join(['            ' + line for line in generate_moves_code()])
+    moves = "\n".join(['        ' + line for line in generate_moves_code()])
     return f'''
 from numba import cuda, float32
 import numpy as np
@@ -38,7 +38,7 @@ cube_3_permutations = {
 def generate_moves_code():
     lines = []
     for i, (name, indices) in enumerate(cube_3_permutations.items()):
-        lines.append(f"elif move == {i}:")
+        lines.append(f"elif move == {i + 1}:")
         for _from, _to in enumerate(indices):
             lines.append(f"    cubes[x][{_to}] = buffer[x][{_from}]")
     lines[0] = lines[0][2:]
