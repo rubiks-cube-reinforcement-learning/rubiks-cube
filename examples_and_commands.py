@@ -2,7 +2,7 @@ import itertools
 import pickle
 from pathlib import Path
 
-from binary_code_generation import PythonCodeGenerator, RustCodeGenerator, StickerBinarySerializer, IntSerializer
+from code_generator.bitwise_repr import StickerBinarySerializer, IntSerializer, PythonCodeGenerator, RustCodeGenerator
 from cube2.solver import find_solution, load_lookup_table as load_lookup_table_2, LOOKUP as LOOKUP2, load_precomputed_moves as load_precomputed_cube2_moves, \
     precompute_solutions as precompute_cube2_solutions, find_solution_precomputed as solve_2_cube_precomputed, \
     precompute_all_moves as precompute_all_cube2_moves, generate_binary_dataset as generate_binary_dataset_2

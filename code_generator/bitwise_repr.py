@@ -1,13 +1,15 @@
 import math
 from collections import defaultdict
 from functools import reduce
-from typing import Dict, TypeVar, Type, Any, Generic
+from typing import TypeVar, Generic, Type, Dict, Any
 
+from code_generator.common import build_cube3_to_cube2_shifts, compute_sticker_indices_for_cubie, \
+    compute_stickers_permutation_per_operation, build_orientation_spec
 from cube2.cube import Cube2
 from cube3.cube import Cube3
 from orientation import compute_all_orienting_permutations_by_cubie_and_stickers
-from utils import Cubie, cube_with_unique_sticker_codes, CubiesCube, AXIS_X, AXIS_Y, AXIS_Z, CubeSerializer, \
-    StickerVectorSerializer, normalize_binary_string, AXES, compute_stickers_permutation
+from utils import CubiesCube, cube_with_unique_sticker_codes, compute_stickers_permutation, Cubie, AXIS_X, AXIS_Y, \
+    AXIS_Z, CubeSerializer, StickerVectorSerializer, normalize_binary_string
 
 T = TypeVar("T", bound=CubiesCube)
 
@@ -34,61 +36,30 @@ class IntSpec:
 
 
 def build_cube3_to_cube2_bitwise_ops():
-    unique_cube3 = cube_with_unique_sticker_codes(Cube3)
-    unique_cube2 = unique_cube3.as_cube2
-    size_diff = len(unique_cube3.as_stickers_vector) - len(unique_cube2.as_stickers_vector)
-
-    old_indices = compute_stickers_permutation(unique_cube2, unique_cube3)
-    new_indices = [i + size_diff for i in range(len(old_indices))]
-    shifts_spec = dict(list(zip(old_indices, new_indices)))
-    return sticker_wise_permutation_to_bitwise_ops(shifts_spec, IntSpec.for_cube(Cube3))
+    size_diff = len(Cube3().as_stickers_vector) - len(Cube2().as_stickers_vector)
+    shifts = {_from: _to + size_diff for _from, _to in build_cube3_to_cube2_shifts().items()}
+    return sticker_wise_permutation_to_bitwise_ops(shifts, IntSpec.for_cube(Cube3))
 
 
 def build_binary_orientation_spec(cube_class: Type[T]) -> Dict[int, Any]:
     int_spec = IntSpec.for_cube(cube_class)
-    bitwise_spec = {}
-    all_orienting_permutations = compute_all_orienting_permutations_by_cubie_and_stickers(cube_class)
-    for cubie_idx, cubie_spec in all_orienting_permutations.items():
-        bitwise_spec[cubie_idx] = []
+    orientation_spec = build_orientation_spec(cube_class)
+    for cubie_idx, cubie_spec in orientation_spec.items():
         for entry in cubie_spec:
-            bitwise_spec[cubie_idx].append({
-                "cubie": cubie_idx,
-                "color_pattern": entry["color_pattern"],
-                "color_detection_bitwise_lhs": color_detection_bitwise_ops(cube_class, cubie_idx),
-                "color_detection_bitwise_rhs": (
-                        (entry["color_pattern"][0] << int_spec.bits_per_color * 2) |
-                        (entry["color_pattern"][1] << int_spec.bits_per_color * 1) |
-                        entry["color_pattern"][2]
-                ),
-                "orient_cube_bitwise_op": permutation_to_bitwise_ops(entry["permutation"], int_spec)
-            })
-    return bitwise_spec
+            entry["color_detection_bitwise_lhs"] = color_detection_bitwise_ops(cube_class, cubie_idx)
+            entry["color_detection_bitwise_rhs"] = (
+                (entry["color_pattern"][0] << int_spec.bits_per_color * 2) |
+                (entry["color_pattern"][1] << int_spec.bits_per_color * 1) |
+                 entry["color_pattern"][2]
+            )
+    return orientation_spec
 
 
 def color_detection_bitwise_ops(cube_class: Type[T], cubie_idx) -> Dict[int, int]:
-    empty_cubie = Cubie(0, 0, 0)
-
-    unique_cube = cube_with_unique_sticker_codes(cube_class)
-    unique_cubies = unique_cube.cubies
-    unique_stickers = unique_cube.as_stickers_vector
-    lookup_order = [AXIS_X, AXIS_Y, AXIS_Z]
-    lookup_stickers = []
-    for axis in lookup_order:
-        for face_nb in cube_class.AXIS_TO_FACES[axis]:
-            for face_cubie_idx in cube_class.FACE_CUBIES_INDICES[face_nb]:
-                sticker_value = unique_cubies[face_cubie_idx].get_face(axis)
-                lookup_stickers.append(unique_stickers.index(sticker_value))
-
-    mask_cube = cube_class(
-        [empty_cubie] * (cubie_idx - 1) +
-        [Cubie(7, 7, 7)] +  # 7 is binary 111
-        [empty_cubie] * (cube_class.NB_CUBIES - cubie_idx)
-    )
-
-    mask_vector = mask_cube.as_stickers_vector
-    xyz_stickers_positions = [sticker_nb for sticker_nb in lookup_stickers if mask_vector[sticker_nb] == 7]
+    nb_cubies = len(cube_class().as_vector)
+    xyz_stickers_positions = compute_sticker_indices_for_cubie(cube_class, cubie_idx)
     sticker_permutations = {
-        _from: _to for _from, _to in zip(xyz_stickers_positions, range(len(unique_stickers) - 3, len(unique_stickers)))
+        _from: _to for _from, _to in zip(xyz_stickers_positions, range(nb_cubies - 3, nb_cubies))
     }
 
     state_shifts = sticker_wise_permutation_to_bitwise_ops(sticker_permutations, IntSpec.for_cube(cube_class))
@@ -164,7 +135,6 @@ class IntSerializer(CubeSerializer[T]):
 
     def unserialize(self, number: int) -> T:
         return self.binary_serializer.unserialize("{0:03b}".format(number))
-
 
 
 class CodeGenerator(Generic[T]):
@@ -321,13 +291,10 @@ pub static SOLVED_STATE: i128 = {hex(self.solved_cube_int)};
 
 
 def compute_stickers_bitwise_shifts_per_operation(cube_class: Type[T]):
-    unique_cube = cube_with_unique_sticker_codes(cube_class)
-
-    bitwise_shifts = {}
-    for name, op in cube_class.OPERATIONS.items():
-        permutation = compute_stickers_permutation(op(unique_cube), unique_cube)
-        bitwise_shifts[name] = permutation_to_bitwise_ops(permutation, IntSpec.for_cube(cube_class))
-    return bitwise_shifts
+    return {
+        name: permutation_to_bitwise_ops(permutation, IntSpec.for_cube(cube_class))
+        for name, permutation in compute_stickers_permutation_per_operation(cube_class).items()
+    }
 
 
 def stringify_bitwise_shifts(shifts):

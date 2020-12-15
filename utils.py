@@ -94,12 +94,13 @@ class CubiesCube:
 
     @property
     def as_stickers_int(self):
-        from binary_code_generation import StickerBinarySerializer, IntSerializer
+        from code_generator.bitwise_repr import IntSerializer
+        from code_generator.bitwise_repr import StickerBinarySerializer
         return IntSerializer(StickerBinarySerializer(type(self))).serialize(self)
 
     @property
     def as_stickers_binary_string(self):
-        from binary_code_generation import StickerBinarySerializer
+        from code_generator.bitwise_repr import StickerBinarySerializer
         return StickerBinarySerializer(type(self)).serialize(self)
 
 
