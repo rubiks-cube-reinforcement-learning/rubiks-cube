@@ -5865,3 +5865,6 @@ def apply_moves(cubes, buffer, moves):
             cubes[x][322] = buffer[x][322]
             cubes[x][323] = buffer[x][323]
 
+
+MOVES_INDICES = {1: 'LU', 2: 'LD', 3: 'RU', 4: 'RD', 5: 'FL', 6: 'FR', 7: 'BL', 8: 'BR', 9: 'UL', 10: 'UR', 11: 'DL', 12: 'DR', 13: 'MU', 14: 'MD', 15: 'ML_X', 16: 'MR_X', 17: 'ML_Y', 18: 'MR_Y'}
+MOVES_NAMES = {'LU': 1, 'LD': 2, 'RU': 3, 'RD': 4, 'FL': 5, 'FR': 6, 'BL': 7, 'BR': 8, 'UL': 9, 'UR': 10, 'DL': 11, 'DR': 12, 'MU': 13, 'MD': 14, 'ML_X': 15, 'MR_X': 16, 'ML_Y': 17, 'MR_Y': 18}
