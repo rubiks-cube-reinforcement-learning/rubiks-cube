@@ -3,6 +3,7 @@ Every cube tensor is assumed to consist of n one-hot segments of size 6 represen
 """
 import random
 from itertools import chain
+
 import torch
 import math
 import numpy as np
@@ -19,10 +20,8 @@ numba_logger = logging.getLogger('numba')
 numba_logger.setLevel(logging.WARNING)
 
 
-def convert_3_cubes_to_2_cubes(cubes):
-    cube_3_one_hot_indices = list(build_cube3_to_cube2_shifts().keys())
-    return cubes[:, cube_3_one_hot_indices]
 
+################### Potentially unused code below ######################
 
 def convert_3_cubes_to_2_cubes_one_hot(cubes):
     cube_3_one_hot_indices = indices_to_one_hot(build_cube3_to_cube2_shifts().keys())
