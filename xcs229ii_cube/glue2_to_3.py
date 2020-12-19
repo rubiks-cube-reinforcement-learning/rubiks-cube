@@ -19,6 +19,16 @@ numba_logger = logging.getLogger('numba')
 numba_logger.setLevel(logging.WARNING)
 
 
+def convert_3_cubes_to_2_cubes(cubes):
+    cube_3_one_hot_indices = list(build_cube3_to_cube2_shifts().keys())
+    return cubes[:, cube_3_one_hot_indices]
+
+
+def convert_3_cubes_to_2_cubes_one_hot(cubes):
+    cube_3_one_hot_indices = indices_to_one_hot(build_cube3_to_cube2_shifts().keys())
+    return cubes[:, cube_3_one_hot_indices]
+
+
 def one_hot(color):
     zeros = [0] * 6
     zeros[color - 1] = 1
@@ -39,7 +49,7 @@ STICKERS_NB = len(Cube3().as_stickers_vector)
 REPRESENTATION_WIDTH = len(colors_to_one_hot(Cube3().as_stickers_vector))
 
 
-class Glue2To3Cube:
+class FastNumbaCubeProcessor:
 
     def __init__(self, device):
         self.device = device
@@ -71,14 +81,6 @@ class Glue2To3Cube:
         self.apply_moves_to_3_cubes_in_place(solved_cubes, moves)
         return solved_cubes, moves
 
-    def convert_3_cubes_to_2_cubes_one_hot(self, cubes: Tensor) -> Tensor:
-        cube_3_one_hot_indices = indices_to_one_hot(build_cube3_to_cube2_shifts().keys())
-        return cubes[:, cube_3_one_hot_indices]
-
-    def convert_3_cubes_to_2_cubes(self, cubes: Tensor) -> Tensor:
-        cube_3_one_hot_indices = list(build_cube3_to_cube2_shifts().keys())
-        return cubes[:, cube_3_one_hot_indices]
-
     def apply_moves_to_3_cubes_in_place(self, batch_of_cubes: Tensor, moves_per_cube: Tensor):
         d_cubes = cuda.from_cuda_array_interface(batch_of_cubes.__cuda_array_interface__)
         d_moves = cuda.from_cuda_array_interface(moves_per_cube.__cuda_array_interface__)
@@ -98,5 +100,5 @@ def _stickers_one_hot_matrix_to_colors_vector(cubes_host):
 
 if __name__ == "__main__":
     device = torch.device("cuda")
-    glue = Glue2To3Cube(device)
+    glue = FastNumbaCubeProcessor(device)
     x = glue.generate_oriented_3_cube_batch(1000000, 19)
