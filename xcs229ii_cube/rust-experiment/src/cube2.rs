@@ -1,5 +1,9 @@
 // This file was auto-generated, do not change manually
 
+fn cube3_to_cube2(x: i256) -> i128 {
+    return (((x & 0x38000000000000000000000000000000000000000) >> 90)|((x & 0xe00000000000000000000000000000000000000) >> 87)|((x & 0xe00000000000000000000000000000000000) >> 78)|((x & 0x3f000000000000000000000000000000000) >> 75)|((x & 0x1c0000000000000000000000000000000) >> 72)|((x & 0x1c0000000000000000000000000000) >> 63)|((x & 0x7e00000000000000000000000000) >> 60)|((x & 0x38000000000000000000000000) >> 57)|((x & 0x38000000000000000000000) >> 48)|((x & 0xfc0000000000000000000) >> 45)|((x & 0x7000000000000000000) >> 42)|((x & 0x7000000000000000) >> 33)|((x & 0x1f8000000000000) >> 30)|((x & 0xe00000000000) >> 27)|((x & 0xe00000000) >> 18)|((x & 0x3f000000) >> 15)|((x & 0x1c0000) >> 12)|((x & 0x1c0) >> 3)|((x & 0x7) << 0)) as i128;
+}
+
 
 pub fn orient_cube(x: i128) -> i128 {
     let mut actual_color_pattern: i128;
@@ -136,12 +140,6 @@ pub fn dr(x: i128) -> i128 {
 
 // self.solved_cube_binary
 pub static ALL_OPERATIONS: &'static [fn(i128) -> i128] = &[lu, ld, ru, rd, fl, fr, bl, br, ul, ur, dl, dr];
-pub static ALL_OPERATIONS_NAMES: &'static [&str] = &[
-    "lu", "ld", "ru", "rd", "fl", "fr", "ul", "ur", "dl", "dr", "bl", "br"
-];
 pub static FIXED_CUBIE_OPERATIONS: &'static [fn(i128) -> i128] = &[lu, ld, bl, br, ul, ur];
-pub static FIXED_CUBIE_OPERATIONS_NAMES: &'static [&str] = &[
-    "lu", "ld", "ul", "ur", "bl", "br"
-];
-
 pub static SOLVED_STATE: i128 = 0x2494926db924b6ddb6;
+    

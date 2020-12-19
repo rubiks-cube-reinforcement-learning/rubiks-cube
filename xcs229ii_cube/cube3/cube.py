@@ -1,9 +1,9 @@
 # coding=utf-8
 from typing import Dict, List
 
-from cube2.cube import Cube2
-from utils import Cubie, AXIS_X, AXIS_Y, AXIS_Z, Operation, CubiesCube, partition, flatten, compute_permutation_dict
-from loggers import getLogger
+from xcs229ii_cube.cube2.cube import Cube2
+from xcs229ii_cube.utils import Cubie, AXIS_X, AXIS_Y, AXIS_Z, Operation, CubiesCube, partition, flatten, compute_permutation_dict
+from xcs229ii_cube.loggers import getLogger
 import numpy as np
 
 logger = getLogger(__name__)

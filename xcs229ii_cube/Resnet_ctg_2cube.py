@@ -19,46 +19,55 @@ import pdb
 
 
 # code block is to get the computation device
-def get_device():
-    if torch.cuda.is_available():
-        device = 'cuda:0'
-    else:
-        device = 'cpu'
-    return device
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
-device = get_device()
-
-train_in = pd.read_csv('train_input.csv')
-train_out = pd.read_csv('train_output.csv')
-
+print(device)
 
 class NumpyDataset(Dataset):
 
     def __init__(self, input_file_name, output_file_name, is_train=True):
-        train_in = pd.read_csv(input_file_name)
-        train_out = pd.read_csv(output_file_name)
-        self.x = train_in.to_numpy()[:, 1:]  # inputs
-        self.y = train_out.to_numpy()[:, 1]  # outputs
+        X_in = pd.read_csv(input_file_name)
+        X_in.drop(columns=['ID'], inplace=True)
+        y_in = pd.read_csv(output_file_name)
+        y_in.drop(columns=['ID'], inplace=True)
+        X_in['distance'] = y_in['distance']
+        self.len = len(X_in)
+
+        from sklearn.model_selection import train_test_split
+
+        X_train, X_test = train_test_split(X_in, test_size=.3, random_state=1)
+
         if is_train:
-            self.x = self.x[:1700000]
-            self.y = self.y[:1700000]
+            X = X_train
         else:
-            self.x = self.x[1700000:]
-            self.y = self.y[1700000:]
+            X = X_test
+
+        self.class_holder = dict()
+        for i in range(1, 15):
+            subsetX = X[X['distance'] == i].copy()
+            subsetX.drop(columns=['distance'], inplace=True)
+            self.class_holder[i] = subsetX.to_numpy()
 
     def __getitem__(self, index):
-        return self.x[index], self.y[index]
+
+        choice_idx = np.random.choice(range(1, 15))
+
+        x = self.class_holder[choice_idx]
+        while len(x) == 0:
+            choice_idx = np.random.choice(range(1, 15))
+            x = self.class_holder[choice_idx]
+
+        x_choice = x[np.random.choice(range(len(x)))]
+
+        return x_choice, choice_idx
 
     def __len__(self):
-        return len(self.x)
+        return self.len
 
-
-train_dataset = NumpyDataset('train_input.csv', 'train_output.csv')
+train_dataset = NumpyDataset('ctg/train_input.csv', 'ctg/train_output.csv')
 trainloader = DataLoader(train_dataset, batch_size=64, shuffle=False)
-valid_dataset = NumpyDataset('train_input.csv', 'train_output.csv', is_train=False)
+valid_dataset = NumpyDataset('ctg/train_input.csv', 'ctg/train_output.csv', is_train=False)
 testloader = DataLoader(valid_dataset, batch_size=64)
-
 
 class ResnetModel(nn.Module):
     def __init__(self, state_dim: int, one_hot_depth: int, h1_dim: int, resnet_dim: int, num_resnet_blocks: int,
@@ -144,7 +153,8 @@ class ResnetModel(nn.Module):
         return x
 
 
-net = ResnetModel(24, 6, 5000, 1000, 4, 1, True)
+net = ResnetModel(24, 6, 1000, 100, 4, 1, True)
+net = net.to(device)
 
 # loss
 criterion = nn.MSELoss()
@@ -154,18 +164,21 @@ optimizer = optim.Adam(net.parameters(), lr=0.0001)
 
 def train(net, trainloader):
     i = 0
-    for epoch in range(10):  # no. of epochs
+    for epoch in range(2):  # no. of epochs
         running_loss = 0
         for data in trainloader:
+            print("Training")
             # data pixels and labels to GPU if available
 
             inputs, labels = data[0].to(device, non_blocking=True) - 1, data[1].to(device, non_blocking=True)
 
-            outputs = net(inputs)
+            #pdb.set_trace()
+
+
             # set the parameter gradients to zero
             optimizer.zero_grad()
             outputs = net(inputs)
-            loss = criterion(outputs, labels.float())
+            loss = criterion(outputs, labels.view(-1).float())
             # propagate the loss backward
             loss.backward()
             # update the gradients
@@ -187,8 +200,9 @@ def test(net, testloader):
     total = 0
     with torch.no_grad():
         for data in testloader:
-            inputs, labels = data[0].to(device, non_blocking=True), data[1].to(device, non_blocking=True)
+            inputs, labels = data[0].to(device, non_blocking=True) - 1, data[1].to(device, non_blocking=True)
             outputs = net(inputs)
+            pdb.set_trace()
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
@@ -196,9 +210,9 @@ def test(net, testloader):
 
 
 train(net, trainloader)
+# net.load_state_dict(torch.load('ctg_2cube_model3.pt'))
 test(net, testloader)
-
-
+#torch.save(net.state_dict(), 'ctg_2cube_model2.pt')
 
 
 

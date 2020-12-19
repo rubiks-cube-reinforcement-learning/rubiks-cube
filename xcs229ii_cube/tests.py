@@ -1,11 +1,11 @@
 import unittest
 
-from cube2.cube import Cube2, CUBE2_OPPOSITE_ROTATION_MOVES, CUBE2_ROTATION_MOVES, OPERATIONS as CUBE2_OPERATIONS
-from cube3.cube import Cube3, CUBE3_ROTATION_MOVES, CUBE3_OPPOSITE_ROTATION_MOVES, OPERATIONS as CUBE3_OPERATIONS
-from orientation import compute_all_cube_rotations, \
+from xcs229ii_cube.cube2.cube import Cube2, CUBE2_OPPOSITE_ROTATION_MOVES, CUBE2_ROTATION_MOVES, OPERATIONS as CUBE2_OPERATIONS
+from xcs229ii_cube.cube3.cube import Cube3, CUBE3_ROTATION_MOVES, CUBE3_OPPOSITE_ROTATION_MOVES, OPERATIONS as CUBE3_OPERATIONS
+from xcs229ii_cube.orientation import compute_all_cube_rotations, \
     compute_cubie_sticker_patterns_to_find_fixed_cubie_in_any_scramled_states, find_fixed_cubie_in_scrambled_state, \
     find_stickers_permutation_to_orient_the_cube, orient_cube
-from utils import cube_with_unique_sticker_codes
+from xcs229ii_cube.utils import cube_with_unique_sticker_codes
 
 
 class TestCube3(unittest.TestCase):

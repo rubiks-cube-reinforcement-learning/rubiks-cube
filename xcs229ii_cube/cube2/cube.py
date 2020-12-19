@@ -1,7 +1,7 @@
 # coding=utf-8
-from utils import Cubie, AXIS_X, AXIS_Y, AXIS_Z, Operation, CubiesCube, \
+from xcs229ii_cube.utils import Cubie, AXIS_X, AXIS_Y, AXIS_Z, Operation, CubiesCube, \
     partition
-from loggers import getLogger
+from xcs229ii_cube.loggers import getLogger
 
 logger = getLogger(__name__)
 

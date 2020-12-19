@@ -2,20 +2,21 @@ import itertools
 import pickle
 from pathlib import Path
 
-from code_generator.bitwise_repr import StickerBinarySerializer, IntSerializer, PythonCodeGenerator, RustCodeGenerator
-from code_generator.numba_cuda import generate_3cube_numba_code
-from cube2.solver import find_solution, load_lookup_table as load_lookup_table_2, LOOKUP as LOOKUP2, load_precomputed_moves as load_precomputed_cube2_moves, \
+from xcs229ii_cube.code_generator.bitwise_repr import StickerBinarySerializer, IntSerializer, PythonCodeGenerator, RustCodeGenerator
+from xcs229ii_cube.code_generator.just_list import generate_3cube_lists_code
+from xcs229ii_cube.code_generator.numba_cuda import generate_3cube_numba_code
+from xcs229ii_cube.cube2.solver import find_solution, load_lookup_table as load_lookup_table_2, LOOKUP as LOOKUP2, load_precomputed_moves as load_precomputed_cube2_moves, \
     precompute_solutions as precompute_cube2_solutions, find_solution_precomputed as solve_2_cube_precomputed, \
     precompute_all_moves as precompute_all_cube2_moves, generate_binary_dataset as generate_binary_dataset_2
-from cube2.cube import Cube2
-from cube3.cube import Cube3
-from cube3.solver import generate_binary_dataset as generate_binary_dataset_3
-from cube3.generated_stickers_bitwise_ops import orient_cube as orient_cube_3, \
+from xcs229ii_cube.cube2.cube import Cube2
+from xcs229ii_cube.cube3.cube import Cube3
+from xcs229ii_cube.cube3.solver import generate_binary_dataset as generate_binary_dataset_3
+from xcs229ii_cube.cube3.generated_stickers_bitwise_ops import orient_cube as orient_cube_3, \
     cube3_to_cube2, FIXED_CUBIE_OPS_DICT as ops3
-from cube2.generated_stickers_bitwise_ops import orient_cube as orient_cube_2, \
+from xcs229ii_cube.cube2.generated_stickers_bitwise_ops import orient_cube as orient_cube_2, \
     FIXED_CUBIE_OPS_DICT as ops2, SOLVED_CUBE_STATE as solved2
-from loggers import getLogger
-from utils import StickerVectorSerializer
+from xcs229ii_cube.loggers import getLogger
+from xcs229ii_cube.utils import StickerVectorSerializer
 
 logger = getLogger(__name__)
 
@@ -36,6 +37,9 @@ def refresh_generated_code():
 
     with Path(base / "cube3/generated_numba.py").open('w+') as fp:
         fp.write(generate_3cube_numba_code())
+
+    with Path(base / "cube3/generated_lists.py").open('w+') as fp:
+        fp.write(generate_3cube_lists_code())
 
 
 def solve_3_cube_corners(cube3_scrambled, cube2_solve_fn=find_solution):

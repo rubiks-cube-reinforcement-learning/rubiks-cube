@@ -7,11 +7,11 @@ import torch
 import math
 import numpy as np
 from torch import Tensor
-from code_generator.common import build_cube3_to_cube2_shifts
+from xcs229ii_cube.code_generator.common import build_cube3_to_cube2_shifts
 from numba import cuda
 
-from cube3.cube import Cube3
-from cube3.generated_numba import apply_moves_fast, FIXED_CUBIE_MOVES_INDICES, MOVES_CPU_TENSOR
+from xcs229ii_cube.cube3.cube import Cube3
+from xcs229ii_cube.cube3.generated_numba import apply_moves_fast, FIXED_CUBIE_MOVES_INDICES, MOVES_CPU_TENSOR
 
 import logging
 
@@ -44,8 +44,9 @@ class Glue2To3Cube:
     def __init__(self, device):
         self.device = device
         self.numba_apply_moves = self._compile_numba_apply_moves()
-        self.recipes_tensor = MOVES_CPU_TENSOR.to(device)
-        self.d_recipes = cuda.from_cuda_array_interface(self.recipes_tensor.__cuda_array_interface__)
+        if device:
+            self.recipes_tensor = MOVES_CPU_TENSOR.to(device)
+            self.d_recipes = cuda.from_cuda_array_interface(self.recipes_tensor.__cuda_array_interface__)
 
     def _compile_numba_apply_moves(self):
         """
@@ -70,8 +71,12 @@ class Glue2To3Cube:
         self.apply_moves_to_3_cubes_in_place(solved_cubes, moves)
         return solved_cubes, moves
 
-    def convert_3_cubes_to_2_cubes(self, cubes: Tensor) -> Tensor:
+    def convert_3_cubes_to_2_cubes_one_hot(self, cubes: Tensor) -> Tensor:
         cube_3_one_hot_indices = indices_to_one_hot(build_cube3_to_cube2_shifts().keys())
+        return cubes[:, cube_3_one_hot_indices]
+
+    def convert_3_cubes_to_2_cubes(self, cubes: Tensor) -> Tensor:
+        cube_3_one_hot_indices = list(build_cube3_to_cube2_shifts().keys())
         return cubes[:, cube_3_one_hot_indices]
 
     def apply_moves_to_3_cubes_in_place(self, batch_of_cubes: Tensor, moves_per_cube: Tensor):

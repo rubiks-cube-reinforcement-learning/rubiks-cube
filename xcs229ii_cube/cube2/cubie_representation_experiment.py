@@ -1,7 +1,7 @@
 from typing import List
 
-from cube2.cube import Cube2
-from utils import CubeSerializer, Cubie, normalize_binary_string, partition
+from xcs229ii_cube.cube2.cube import Cube2
+from xcs229ii_cube.utils import CubeSerializer, Cubie, normalize_binary_string, partition
 
 
 class CubieVectorSerializer(CubeSerializer):
