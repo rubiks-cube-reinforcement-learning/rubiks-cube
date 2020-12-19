@@ -38,7 +38,7 @@ def find_solution(state):
             new_state = op(state)
             new_distance = LOOKUP[new_state]
             if new_distance < distance:
-                path.append(op.__name__)
+                path.append(op.__name__.upper())
                 state, distance = new_state, new_distance
                 break
         else:
