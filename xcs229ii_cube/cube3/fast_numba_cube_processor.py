@@ -3,20 +3,29 @@ Every cube tensor is assumed to consist of n one-hot segments of size 6 represen
 """
 import random
 from itertools import chain
+
 import torch
 import math
 import numpy as np
 from torch import Tensor
-from code_generator.common import build_cube3_to_cube2_shifts
+from xcs229ii_cube.code_generator.common import build_cube3_to_cube2_shifts
 from numba import cuda
 
-from cube3.cube import Cube3
-from cube3.generated_numba import apply_moves_fast, FIXED_CUBIE_MOVES_INDICES, MOVES_CPU_TENSOR
+from xcs229ii_cube.cube3.cube import Cube3
+from xcs229ii_cube.cube3.generated_numba import apply_moves_fast, FIXED_CUBIE_MOVES_INDICES, MOVES_CPU_TENSOR
 
 import logging
 
 numba_logger = logging.getLogger('numba')
 numba_logger.setLevel(logging.WARNING)
+
+
+
+################### Potentially unused code below ######################
+
+def convert_3_cubes_to_2_cubes_one_hot(cubes):
+    cube_3_one_hot_indices = indices_to_one_hot(build_cube3_to_cube2_shifts().keys())
+    return cubes[:, cube_3_one_hot_indices]
 
 
 def one_hot(color):
@@ -39,13 +48,14 @@ STICKERS_NB = len(Cube3().as_stickers_vector)
 REPRESENTATION_WIDTH = len(colors_to_one_hot(Cube3().as_stickers_vector))
 
 
-class Glue2To3Cube:
+class FastNumbaCubeProcessor:
 
     def __init__(self, device):
         self.device = device
         self.numba_apply_moves = self._compile_numba_apply_moves()
-        self.recipes_tensor = MOVES_CPU_TENSOR.to(device)
-        self.d_recipes = cuda.from_cuda_array_interface(self.recipes_tensor.__cuda_array_interface__)
+        if device:
+            self.recipes_tensor = MOVES_CPU_TENSOR.to(device)
+            self.d_recipes = cuda.from_cuda_array_interface(self.recipes_tensor.__cuda_array_interface__)
 
     def _compile_numba_apply_moves(self):
         """
@@ -70,10 +80,6 @@ class Glue2To3Cube:
         self.apply_moves_to_3_cubes_in_place(solved_cubes, moves)
         return solved_cubes, moves
 
-    def convert_3_cubes_to_2_cubes(self, cubes: Tensor) -> Tensor:
-        cube_3_one_hot_indices = indices_to_one_hot(build_cube3_to_cube2_shifts().keys())
-        return cubes[:, cube_3_one_hot_indices]
-
     def apply_moves_to_3_cubes_in_place(self, batch_of_cubes: Tensor, moves_per_cube: Tensor):
         d_cubes = cuda.from_cuda_array_interface(batch_of_cubes.__cuda_array_interface__)
         d_moves = cuda.from_cuda_array_interface(moves_per_cube.__cuda_array_interface__)
@@ -93,5 +99,5 @@ def _stickers_one_hot_matrix_to_colors_vector(cubes_host):
 
 if __name__ == "__main__":
     device = torch.device("cuda")
-    glue = Glue2To3Cube(device)
+    glue = FastNumbaCubeProcessor(device)
     x = glue.generate_oriented_3_cube_batch(1000000, 19)

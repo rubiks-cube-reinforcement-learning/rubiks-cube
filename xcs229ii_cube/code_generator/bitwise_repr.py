@@ -3,12 +3,12 @@ from collections import defaultdict
 from functools import reduce
 from typing import TypeVar, Generic, Type, Dict, Any
 
-from code_generator.common import build_cube3_to_cube2_shifts, compute_sticker_indices_for_cubie, \
+from xcs229ii_cube.code_generator.common import build_cube3_to_cube2_shifts, compute_sticker_indices_for_cubie, \
     compute_stickers_permutation_per_operation, build_orientation_spec
-from cube2.cube import Cube2
-from cube3.cube import Cube3
-from orientation import compute_all_orienting_permutations_by_cubie_and_stickers
-from utils import CubiesCube, cube_with_unique_sticker_codes, compute_stickers_permutation, Cubie, AXIS_X, AXIS_Y, \
+from xcs229ii_cube.cube2.cube import Cube2
+from xcs229ii_cube.cube3.cube import Cube3
+from xcs229ii_cube.orientation import compute_all_orienting_permutations_by_cubie_and_stickers
+from xcs229ii_cube.utils import CubiesCube, cube_with_unique_sticker_codes, compute_stickers_permutation, Cubie, AXIS_X, AXIS_Y, \
     AXIS_Z, CubeSerializer, StickerVectorSerializer, normalize_binary_string
 
 T = TypeVar("T", bound=CubiesCube)

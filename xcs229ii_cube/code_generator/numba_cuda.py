@@ -1,7 +1,7 @@
 import json
 from itertools import chain
-from code_generator.common import compute_stickers_permutation_per_operation
-from cube3.cube import Cube3
+from xcs229ii_cube.code_generator.common import compute_stickers_permutation_per_operation
+from xcs229ii_cube.cube3.cube import Cube3
 
 
 def indices_to_one_hot(indices):

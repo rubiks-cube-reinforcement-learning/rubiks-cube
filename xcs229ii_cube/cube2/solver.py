@@ -1,8 +1,8 @@
 import pickle
 from pathlib import Path
 
-from cube2.generated_stickers_bitwise_ops import FIXED_CUBIE_OPS, OPS, SOLVED_CUBE_STATE, orient_cube
-from utils import generate_dataset, scramble
+from xcs229ii_cube.cube2.generated_stickers_bitwise_ops import FIXED_CUBIE_OPS, OPS, SOLVED_CUBE_STATE, orient_cube
+from xcs229ii_cube.utils import generate_dataset, scramble
 
 LOOKUP = {}
 
@@ -38,7 +38,7 @@ def find_solution(state):
             new_state = op(state)
             new_distance = LOOKUP[new_state]
             if new_distance < distance:
-                path.append(op.__name__)
+                path.append(op.__name__.upper())
                 state, distance = new_state, new_distance
                 break
         else:

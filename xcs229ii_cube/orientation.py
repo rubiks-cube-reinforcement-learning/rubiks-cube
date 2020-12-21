@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import List, TypeVar, Callable, Type, Dict, Tuple, Any
 
-from utils import CubiesCube, flatten, compute_stickers_permutation, Cubie, cube_with_unique_sticker_codes, \
+from xcs229ii_cube.utils import CubiesCube, flatten, compute_stickers_permutation, Cubie, cube_with_unique_sticker_codes, \
     apply_stickers_permutation, identity
 
 T = TypeVar("T", bound=CubiesCube)

@@ -1,8 +1,8 @@
 from typing import TypeVar, Type, List, Dict, Any
 
-from cube3.cube import Cube3
-from orientation import compute_all_orienting_permutations_by_cubie_and_stickers
-from utils import CubiesCube, cube_with_unique_sticker_codes, compute_stickers_permutation, Cubie, AXIS_X, AXIS_Y, AXIS_Z
+from xcs229ii_cube.cube3.cube import Cube3
+from xcs229ii_cube.orientation import compute_all_orienting_permutations_by_cubie_and_stickers
+from xcs229ii_cube.utils import CubiesCube, cube_with_unique_sticker_codes, compute_stickers_permutation, Cubie, AXIS_X, AXIS_Y, AXIS_Z
 
 T = TypeVar("T", bound=CubiesCube)
 
